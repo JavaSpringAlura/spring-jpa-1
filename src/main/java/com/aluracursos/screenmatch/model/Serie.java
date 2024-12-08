@@ -2,6 +2,8 @@ package com.aluracursos.screenmatch.model;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalDouble;
 
 @Entity
@@ -19,15 +21,23 @@ public class Serie {
     private Categoria genero;
     private String actores;
     private String sinopsis;
+    @OneToMany(mappedBy = "serie", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Episodio> episodios;
+
 
     public Serie (DatosSerie datosSerie){
         this.titulo = datosSerie.titulo();
         this.totalTemporadas = datosSerie.totalTemporadas();
         this.evaluacion = OptionalDouble.of(Double.valueOf(datosSerie.evaluacion())).orElse(0);
         this.poster = datosSerie.poster();
-        this.genero = Categoria.fromString(datosSerie.genero().split(",")[0].trim());
+            this.genero = Categoria.fromString(datosSerie.genero().split(",")[0].trim());
         this.actores = datosSerie.actores();
         this.sinopsis = datosSerie.sinopsis();
+//        this.episodios = datosSerie.
+    }
+
+    public Serie() {
+
     }
 
     @Override
@@ -40,6 +50,7 @@ public class Serie {
                 ", genero=" + genero +
                 ", actores='" + actores + '\'' +
                 ", sinopsis='" + sinopsis + '\'' +
+                ", episodios='" + episodios + '\'' +
                 " }";
     }
 
@@ -105,5 +116,14 @@ public class Serie {
 
     public void setSinopsis(String sinopsis) {
         this.sinopsis = sinopsis;
+    }
+
+    public List<Episodio> getEpisodios() {
+        return episodios;
+    }
+
+    public void setEpisodios(List<Episodio> episodios) {
+        episodios.forEach(e -> e.setSerie(this));
+        this.episodios = episodios;
     }
 }
