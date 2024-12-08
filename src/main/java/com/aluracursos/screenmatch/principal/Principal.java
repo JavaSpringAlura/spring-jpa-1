@@ -1,9 +1,6 @@
 package com.aluracursos.screenmatch.principal;
 
-import com.aluracursos.screenmatch.model.DatosSerie;
-import com.aluracursos.screenmatch.model.DatosTemporadas;
-import com.aluracursos.screenmatch.model.Episodio;
-import com.aluracursos.screenmatch.model.Serie;
+import com.aluracursos.screenmatch.model.*;
 import com.aluracursos.screenmatch.repository.SerieRepository;
 import com.aluracursos.screenmatch.service.ConsumoAPI;
 import com.aluracursos.screenmatch.service.ConvierteDatos;
@@ -33,7 +30,10 @@ public class Principal {
                     2 - Buscar episodios
                     3 - Mostrar series buscadas
                     4 - Buscar serie por titulo
-                                  
+                    5 - Buscar serie por temporadas
+                    6 - Top 5 series
+                    7 - Buscar por Género
+                                                      
                     0 - Salir
                     """;
             System.out.println(menu);
@@ -52,6 +52,15 @@ public class Principal {
                     break;
                 case 4:
                     buscarSeriePorTitulo();
+                    break;
+                case 5:
+                    buscarSeriePorTotalTemporadas();
+                    break;
+                case 6:
+                    top5series();
+                    break;
+                case 7:
+                    buscarPorGenero();
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -123,6 +132,29 @@ public class Principal {
         }else{
             System.out.println("No existe el serie");
         }
+    }
+    private void buscarSeriePorTotalTemporadas() {
+        System.out.println("Filtra series con temporadas mayores a: ");
+        Integer serieBuscada = Integer.valueOf(teclado.nextLine());
+        Optional<List<Serie>> series = repositorioSerie.findByTotalTemporadasGreaterThanEqual(serieBuscada);
+        if (series.isPresent()) {
+            List<Serie> seriesList = series.orElse(new ArrayList<>());
+            seriesList.forEach(System.out::println);
+        }else{
+            System.out.println("No existe el serie");
+        }
+    }
+    private void top5series(){
+        // en caso haya menos series que el top traera todas las series sin errores ordenadas por la evaluacion desendentenemente
+        List<Serie> series = repositorioSerie.findTop5ByOrderByEvaluacionDesc();
+        series.forEach(System.out::println);
+    }
+    private void buscarPorGenero(){
+        System.out.println("Escribe el genero de la serie: ");
+        var input = teclado.nextLine();
+        var genero = Categoria.fromEspaniol(input);
+        List<Serie> series = repositorioSerie.findByGenero(genero);
+        series.forEach(System.out::println);
     }
 
 }
