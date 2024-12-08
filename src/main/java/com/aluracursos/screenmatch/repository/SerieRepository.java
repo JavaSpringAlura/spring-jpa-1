@@ -13,4 +13,5 @@ public interface SerieRepository extends JpaRepository<Serie,Long> {
     Optional<List<Serie>> findByTotalTemporadasGreaterThanEqual(Integer temporadas);
     List<Serie> findTop5ByOrderByEvaluacionDesc();
     List<Serie> findByGenero(Categoria categoria);
+    Optional<List<Serie>> findByTotalTemporadasLessThanEqualAndEvaluacionGreaterThanEqual(Integer temporadas, Double evaluacion);
 }

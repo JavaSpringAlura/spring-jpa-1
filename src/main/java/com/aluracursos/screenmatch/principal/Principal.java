@@ -33,7 +33,7 @@ public class Principal {
                     5 - Buscar serie por temporadas
                     6 - Top 5 series
                     7 - Buscar por Género
-                                                      
+                    8 - Filtrar series                             
                     0 - Salir
                     """;
             System.out.println(menu);
@@ -61,6 +61,9 @@ public class Principal {
                     break;
                 case 7:
                     buscarPorGenero();
+                    break;
+                case 8:
+                    filtrarSeriesPorTemporadaYEvaluacion();
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -119,8 +122,15 @@ public class Principal {
     }
     private void buscarSerieWeb() {
         DatosSerie datos = getDatosSerie();
-        Serie serie = new Serie(datos);
-        repositorioSerie.save(serie);
+        Optional<Serie> serie = Optional.of(new Serie(datos));
+        if (serie.isPresent()) {
+            Serie serieResult = serie.orElse(new Serie(datos));
+            System.out.println(serie);
+            repositorioSerie.save(serieResult);
+        }else{
+            System.out.println("La serie buscada no existe en la base de datos de OMDB");
+        }
+
         System.out.println(datos);
     }
     private void buscarSeriePorTitulo() {
@@ -155,6 +165,19 @@ public class Principal {
         var genero = Categoria.fromEspaniol(input);
         List<Serie> series = repositorioSerie.findByGenero(genero);
         series.forEach(System.out::println);
+    }
+    private void filtrarSeriesPorTemporadaYEvaluacion(){
+        System.out.print("Ingrese las temporadas máximas: ");
+        Integer temporadas = Integer.valueOf(teclado.nextLine());
+        System.out.print("Ingrese la evaluación minimas: ");
+        Double evaluacion = Double.valueOf(teclado.nextLine());
+        Optional<List<Serie>> series = repositorioSerie.findByTotalTemporadasLessThanEqualAndEvaluacionGreaterThanEqual(temporadas, evaluacion);
+        if (series.isPresent()) {
+            List<Serie> seriesList = series.orElse(new ArrayList<>());
+            seriesList.forEach(System.out::println);
+        }else{
+            System.out.println("No hay series con: "+ temporadas + " temporadas y evaluacion: "+ evaluacion);
+        }
     }
 
 }
