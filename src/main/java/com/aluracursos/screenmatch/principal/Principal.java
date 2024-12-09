@@ -17,6 +17,7 @@ public class Principal {
     private List<DatosSerie> datosSeries = new ArrayList<>();
     private SerieRepository repositorioSerie;
     private List<Serie> series;
+    private Optional<Serie> serieObjetivo;
 
     public Principal(SerieRepository serieRepository) {
         this.repositorioSerie = serieRepository;
@@ -34,6 +35,9 @@ public class Principal {
                     6 - Top 5 series
                     7 - Buscar por Género
                     8 - Filtrar series                             
+                    9 - Filtrar series con JPQL      
+                    10- Episodio Por titulo    
+                    11- Top 5 Episodios por Serie                   
                     0 - Salir
                     """;
             System.out.println(menu);
@@ -64,6 +68,15 @@ public class Principal {
                     break;
                 case 8:
                     filtrarSeriesPorTemporadaYEvaluacion();
+                    break;
+                case 9:
+                    filtrarSeriesPorTemporadaYEvaluacionJPQL();
+                    break;
+                case 10:
+                    buscarEpisodioTitulo();
+                    break;
+                case 11:
+                    top5Episodios();
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -136,9 +149,9 @@ public class Principal {
     private void buscarSeriePorTitulo() {
         System.out.println("Escribe el titulo de la serie: ");
         String serieBuscada = teclado.nextLine();
-        Optional<Serie> serie = repositorioSerie.findByTituloContainsIgnoreCase(serieBuscada);
-        if (serie.isPresent()) {
-            System.out.println(serie);
+        serieObjetivo = repositorioSerie.findByTituloContainsIgnoreCase(serieBuscada);
+        if (serieObjetivo.isPresent()) {
+            System.out.println(serieObjetivo);
         }else{
             System.out.println("No existe el serie");
         }
@@ -179,6 +192,44 @@ public class Principal {
             System.out.println("No hay series con: "+ temporadas + " temporadas y evaluacion: "+ evaluacion);
         }
     }
+    private void filtrarSeriesPorTemporadaYEvaluacionJPQL(){
+        System.out.print("Ingrese las temporadas máximas: ");
+        Integer temporadas = Integer.valueOf(teclado.nextLine());
+        System.out.print("Ingrese la evaluación minimas: ");
+        Double evaluacion = Double.valueOf(teclado.nextLine());
+        Optional<List<Serie>> series = repositorioSerie.seriesPorTemporadayEvaluacion(temporadas, evaluacion);
+        if (series.isPresent()) {
+            List<Serie> seriesList = series.orElse(new ArrayList<>());
+            seriesList.forEach(System.out::println);
+        }else{
+            System.out.println("No hay series con: "+ temporadas + " temporadas y evaluacion: "+ evaluacion);
+        }
+    }
+    private void buscarEpisodioTitulo(){
+        System.out.println("Escribe el titulo del episodio: ");
+        String titulo = teclado.nextLine();
+        Optional<List<Episodio>> episodiosMatch = repositorioSerie.episodiosPorTitulo(titulo);
+        if (episodiosMatch.isPresent()) {
+            List<Episodio> episodios = episodiosMatch.orElse(new ArrayList<>());
+            episodios.forEach(e ->
+                    System.out.printf("Titulo Episodio: %s , Serie: %s , Temporada: %d , Evaluación: %.2f%n",
+                            e.getTitulo(), e.getSerie().getTitulo(), e.getTemporada(), e.getEvaluacion())
+            );
+        }else{
+            System.out.println("No existe el episodio");
+        }
+    }
+    private void top5Episodios(){
+        buscarSeriePorTitulo();
+        if (serieObjetivo.isPresent()) {
+            Serie serie = serieObjetivo.get();
+            List<Episodio> top5Episodios = repositorioSerie.top5Episodios(serie);
+            top5Episodios.forEach(e ->
+                    System.out.printf("Temporada: %d, NumEpisodio: %d, Titulo: %s , Evaluación: %.2f%n",
+                            e.getTemporada(), e.getNumeroEpisodio(), e.getTitulo(), e.getEvaluacion())
+            );
 
+        }
+    }
 }
 
